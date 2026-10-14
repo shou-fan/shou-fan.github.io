@@ -280,6 +280,42 @@ async function ghApiFetch(path) {
     return await res.json();
 }
 
+// 带超时的 fetch（默认 15s），防止 GFW 卡住时 worker 长期挂起
+async function fetchWithTimeout(url, ms) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms || 15000);
+    try {
+        return await fetch(url, { signal: ctrl.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// 拉取仓库中单个源码文件的文本：主用 jsDelivr CDN（大陆访问快、支持 CORS），
+// 失败则回退 raw.githubusercontent.com。都失败则抛错（错误信息包含源名）。
+async function fetchFileText(owner, repo, ref, path) {
+    const encPath = path.split("/").map(encodeURIComponent).join("/");
+    const encRef = encodeURIComponent(ref);
+    const encOwner = encodeURIComponent(owner);
+    const encRepo = encodeURIComponent(repo);
+    const sources = [
+        { name: "jsDelivr", url: `https://cdn.jsdelivr.net/gh/${encOwner}/${encRepo}@${encRef}/${encPath}` },
+        { name: "raw",      url: `https://raw.githubusercontent.com/${encOwner}/${encRepo}/${encRef}/${encPath}` },
+    ];
+    let lastErr = null;
+    for (const src of sources) {
+        try {
+            const res = await fetchWithTimeout(src.url, 15000);
+            if (res.ok) return await res.text();
+            lastErr = `${src.name} HTTP ${res.status}`;
+        } catch (e) {
+            const isAbort = e && (e.name === "AbortError" || e.code === 20);
+            lastErr = isAbort ? `${src.name} 超时(>15s)` : `${src.name}: ${(e && e.message) || "网络错误"}`;
+        }
+    }
+    throw new Error(lastErr || "拉取文件失败");
+}
+
 // 从 GitHub 仓库 URL 统计代码量（复用现有 countLines 算法）
 // onProgress(msg) 用于实时上报进度
 async function runStatsFromGitHub(input, onProgress) {
@@ -319,29 +355,28 @@ async function runStatsFromGitHub(input, onProgress) {
     ORDER.forEach(name => { stats[name] = { files: 0, blank: 0, comment: 0, code: 0, total: 0 }; });
     let counted = 0, failed = 0;
 
+    let firstError = null;
+
     if (files.length > 0) {
-        // 5. 并发拉取 raw 内容（raw.githubusercontent.com 不估 API 限额）
-        const rawBase = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(ref)}/`;
+        // 5. 并发拉取源码：主 jsDelivr CDN，备 raw.githubusercontent.com
         let nextIdx = 0;
         const worker = async () => {
             while (true) {
                 const i = nextIdx++;
                 if (i >= files.length) break;
                 const f = files[i];
-                const url = rawBase + f.path.split("/").map(encodeURIComponent).join("/");
                 try {
-                    const res = await fetch(url);
-                    if (!res.ok) { failed++; }
-                    else {
-                        const text = await res.text();
-                        const langName = EXT_MAP[extOf(f.path)];
-                        const lc = countLines(LANGS[langName], text);
-                        const s = stats[langName];
-                        s.files += 1; s.code += lc.code; s.blank += lc.blank;
-                        s.comment += lc.comment; s.total += lc.total;
-                        counted++;
-                    }
-                } catch (e) { failed++; }
+                    const text = await fetchFileText(owner, repo, ref, f.path);
+                    const langName = EXT_MAP[extOf(f.path)];
+                    const lc = countLines(LANGS[langName], text);
+                    const s = stats[langName];
+                    s.files += 1; s.code += lc.code; s.blank += lc.blank;
+                    s.comment += lc.comment; s.total += lc.total;
+                    counted++;
+                } catch (e) {
+                    failed++;
+                    if (!firstError) firstError = (e && e.message) || String(e);
+                }
                 onProgress(`统计中 ${counted + failed}/${files.length}`);
             }
         };
@@ -349,7 +384,7 @@ async function runStatsFromGitHub(input, onProgress) {
         await Promise.all(Array.from({ length: CONC }, () => worker()));
     }
 
-    return { stats, counted, failed, fileTotal: files.length, truncated };
+    return { stats, counted, failed, fileTotal: files.length, truncated, firstError };
 }
 
 // ---------------- 页面交互绑定 ----------------
@@ -428,7 +463,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 resultEl.innerHTML = renderTableHTML(r.stats);
                 const secs = ((performance.now() - t0) / 1000).toFixed(1);
                 let m = `已统计 ${r.counted} 个源码文件（${secs}s）`;
-                if (r.failed > 0) m += `，失败 ${r.failed}`;
+                if (r.failed > 0) {
+                    m += `，失败 ${r.failed}`;
+                    if (r.firstError) m += `（示例：${r.firstError}）`;
+                }
                 if (r.truncated) m += `，文件树过大已截断（前 800 个）`;
                 statusEl.textContent = m;
             } catch (err) {
