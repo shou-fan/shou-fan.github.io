@@ -59,7 +59,7 @@
                 <div class="app-grid">
                     <div class="app-card" data-goto="#app-loc">
                         <h2>代码量统计</h2>
-                        <p>统计 C / C++ / Java / Python 源码的文件数、代码行、空行、注释行与总行数。</p>
+                        <p>统计 C / C++ / Java / Python / JavaScript / HTML / CSS 源码的文件数、代码行、空行、注释行与总行数。</p>
                     </div>
                     <div class="app-card" data-goto="#app-quiz">
                         <h2>口算题生成</h2>
@@ -75,7 +75,8 @@
                 <button class="back-btn" data-goto="#miniapp" data-back>← 返回</button>
                 <h1>代码量统计工具</h1>
                 <p class="miniapp-desc">
-                    粘贴 GitHub 仓库链接在线统计，或选择本地的 C / C++ / Java / Python
+                    粘贴 GitHub 仓库链接在线统计，或选择本地的
+                    C / C++ / Java / Python / JavaScript / HTML / CSS
                     源码文件/文件夹，自动统计每种语言的文件数、空行、注释行、代码行与总行数。
                 </p>
 
@@ -108,7 +109,7 @@
                 <div class="upload-box">
                     <!-- 两个隐藏的原生 input：一个选文件，一个选文件夹 -->
                     <input type="file" id="locFiles" multiple hidden
-                           accept=".c,.h,.cpp,.cc,.cxx,.c++,.hpp,.hh,.hxx,.h++,.inl,.java,.py,.pyw">
+                           accept=".c,.h,.cpp,.cc,.cxx,.c++,.hpp,.hh,.hxx,.h++,.inl,.java,.py,.pyw,.js,.mjs,.cjs,.jsx,.html,.htm,.css">
                     <input type="file" id="locDir" webkitdirectory directory multiple hidden>
 
                     <button id="pickFiles" class="btn">选择文件</button>

@@ -19,6 +19,12 @@ const LANGS = {
     "Java":   { lineComments: ["//"], blockComments: [["/*", "*/"]], multilineStrings: [], singleStrings: ['"', "'"] },
     // Python: 三引号视为块注释(docstring)，计入 comment
     "Python": { lineComments: ["#"],  blockComments: [['"""', '"""'], ["'''", "'''"]], multilineStrings: [], singleStrings: ['"', "'"] },
+    // JavaScript: // 行注释、/* */ 块注释、` 模板字符串（可跨行，start=end=``）
+    "JavaScript": { lineComments: ["//"], blockComments: [["/*", "*/"]], multilineStrings: ["`"], singleStrings: ['"', "'"] },
+    // HTML: <!-- --> 块注释；无行注释；属性里的引号当字符串防止误判
+    "HTML":       { lineComments: [],      blockComments: [["<!--", "-->"]],  multilineStrings: [], singleStrings: ['"', "'"] },
+    // CSS: /* */ 块注释；无行注释
+    "CSS":        { lineComments: [],      blockComments: [["/*", "*/"]],     multilineStrings: [], singleStrings: ['"', "'"] },
 };
 
 // 扩展名(小写) -> 语言 映射（对应 kExtMap）
@@ -28,10 +34,13 @@ const EXT_MAP = {
     ".hpp": "C++", ".hh": "C++", ".hxx": "C++", ".h++": "C++", ".inl": "C++",
     ".java": "Java",
     ".py": "Python", ".pyw": "Python",
+    ".js": "JavaScript", ".mjs": "JavaScript", ".cjs": "JavaScript", ".jsx": "JavaScript",
+    ".html": "HTML", ".htm": "HTML",
+    ".css": "CSS",
 };
 
 // 输出顺序（对应 order）
-const ORDER = ["C", "C++", "Java", "Python"];
+const ORDER = ["C", "C++", "Java", "Python", "JavaScript", "HTML", "CSS"];
 
 // ---------------- 扫描辅助函数 ----------------
 
