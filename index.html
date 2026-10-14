@@ -84,6 +84,25 @@
                            placeholder="粘贴 GitHub 仓库链接，如 https://github.com/用户/仓库（可选 /tree/分支/子目录）">
                     <button id="ghRun" class="btn btn-primary">统计仓库</button>
                 </div>
+
+                <details class="gh-advanced">
+                    <summary>高级：使用 GitHub Token（把 60 次/小时提升到 5000）<span id="ghTokenStatus" class="gh-token-status"></span></summary>
+                    <div class="gh-token-row">
+                        <input type="password" id="ghToken" class="gh-input" autocomplete="new-password"
+                               spellcheck="false" placeholder="粘贴 Personal Access Token">
+                        <button id="ghTokenSave" class="btn">保存</button>
+                        <button id="ghTokenClear" class="btn">清除</button>
+                    </div>
+                    <p class="gh-token-hint">
+                        Token 只存本浏览器 <code>localStorage</code>，仅随请求发送到 <code>api.github.com</code>；
+                        访问他人主页时互相不共享、也不会消耗彼此额度。
+                    </p>
+                    <p class="gh-token-hint">
+                        生成地址：<a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>（权限勾 <code>public_repo</code> 只读即可）
+                    </p>
+                    <p class="gh-quota" id="ghQuota"></p>
+                </details>
+
                 <div class="loc-divider">— 或本地文件 —</div>
 
                 <div class="upload-box">

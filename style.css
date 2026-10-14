@@ -318,6 +318,79 @@ body {
     margin: 0.4rem 0 1rem;
 }
 
+/* ---------- GitHub Token 高级选项（折叠区） ---------- */
+.gh-advanced {
+    margin: 0.2rem 0 0.6rem;
+    font-size: 0.88rem;
+    color: var(--text-gray);
+}
+
+.gh-advanced summary {
+    cursor: pointer;
+    padding: 0.3rem 0;
+    list-style: none;
+    color: var(--text);
+}
+
+.gh-advanced summary::-webkit-details-marker { display: none; }
+
+.gh-advanced summary::before {
+    content: "▸ ";
+    display: inline-block;
+    margin-right: 0.15rem;
+}
+
+.gh-advanced[open] summary::before { content: "▾ "; }
+
+.gh-token-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.gh-token-row .gh-input {
+    flex: 1 1 240px;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+.gh-token-status {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background: var(--text);
+    color: #ffffff;
+    vertical-align: middle;
+}
+
+.gh-token-status:empty { display: none; }
+
+.gh-token-hint {
+    color: var(--text-gray);
+    font-size: 0.82rem;
+    margin: 0.45rem 0;
+    line-height: 1.55;
+}
+
+.gh-token-hint a { color: var(--text); }
+
+.gh-token-hint code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 0.05rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.82rem;
+}
+
+.gh-quota {
+    color: var(--text-gray);
+    font-size: 0.82rem;
+    margin-top: 0.3rem;
+}
+
+.gh-quota:empty { display: none; }
+
 /* 结果表格（黑白灰极简风） */
 .loc-result table {
     width: 100%;

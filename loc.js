@@ -217,18 +217,53 @@ function parseGitHubUrl(input) {
     return { owner, repo, ref, subpath };
 }
 
-// 封装 GitHub API 请求 + 常见错误提示
+// ---------- GitHub Token 存取（localStorage） ----------
+const GH_TOKEN_KEY = "locGitHubToken";
+
+function getGitHubToken() {
+    try { return localStorage.getItem(GH_TOKEN_KEY) || ""; }
+    catch (e) { return ""; }
+}
+
+function setGitHubToken(token) {
+    try {
+        if (token) localStorage.setItem(GH_TOKEN_KEY, token);
+        else localStorage.removeItem(GH_TOKEN_KEY);
+    } catch (e) { /* 部分环境 localStorage 不可用，忽略 */ }
+}
+
+// 从响应头里读 x-ratelimit-remaining / -limit，更新页面配额展示
+function updateGhQuotaDisplay(res) {
+    const el = document.getElementById("ghQuota");
+    if (!el) return;
+    const remain = res.headers.get("x-ratelimit-remaining");
+    const limit  = res.headers.get("x-ratelimit-limit");
+    if (remain !== null && limit !== null) {
+        el.textContent = `API 剩余额度：${remain} / ${limit} 次/小时`
+            + (getGitHubToken() ? "（已启用 Token）" : "（匿名）");
+    }
+}
+
+// 封装 GitHub API 请求：自动附带 Token（如果已保存）+ 常见错误提示
 async function ghApiFetch(path) {
     const url = "https://api.github.com/" + path.replace(/^\//, "");
+    const headers = { Accept: "application/vnd.github+json" };
+    const tok = getGitHubToken();
+    if (tok) headers.Authorization = "Bearer " + tok;
     let res;
     try {
-        res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+        res = await fetch(url, { headers });
     } catch (e) {
         throw new Error("网络错误：无法访问 GitHub API");
     }
+    updateGhQuotaDisplay(res);
+    if (res.status === 401) throw new Error("GitHub Token 无效或已过期（401），请重新生成或在「高级」中清除");
     if (res.status === 403) {
-        if (res.headers.get("x-ratelimit-remaining") === "0")
-            throw new Error("GitHub API 未登录限额已用完（60 次/小时），请稍后再试");
+        if (res.headers.get("x-ratelimit-remaining") === "0") {
+            throw new Error(tok
+                ? "已启用 Token 但配额已用完（5000 次/小时），请稍后再试"
+                : "GitHub API 未登录限额已用完（60 次/小时），可在下方「高级」里填入自己的 Token 提升到 5000 次/小时");
+        }
         throw new Error("GitHub API 拒绝访问（403）");
     }
     if (res.status === 404) throw new Error("仓库不存在或为私有仓库（404）");
@@ -399,4 +434,31 @@ document.addEventListener("DOMContentLoaded", () => {
             if (e.key === "Enter") { e.preventDefault(); runGitHub(); }
         });
     }
+
+    // ===== GitHub Token 管理（保存/清除到 localStorage） =====
+    const ghTokenInput  = document.getElementById("ghToken");
+    const ghTokenSave   = document.getElementById("ghTokenSave");
+    const ghTokenClear  = document.getElementById("ghTokenClear");
+    const ghTokenStatus = document.getElementById("ghTokenStatus");
+
+    function refreshGhTokenStatus() {
+        if (ghTokenStatus) ghTokenStatus.textContent = getGitHubToken() ? "已启用" : "";
+    }
+
+    if (ghTokenSave && ghTokenInput) ghTokenSave.addEventListener("click", () => {
+        const v = (ghTokenInput.value || "").trim();
+        setGitHubToken(v);
+        ghTokenInput.value = "";   // 保存后立刻清空，避免 DevTools 里能看到明文
+        refreshGhTokenStatus();
+        statusEl.textContent = v ? "已保存 Token，限额提升到 5000/小时" : "Token 已清空，回到匿名 60/小时";
+    });
+
+    if (ghTokenClear && ghTokenInput) ghTokenClear.addEventListener("click", () => {
+        setGitHubToken("");
+        ghTokenInput.value = "";
+        refreshGhTokenStatus();
+        statusEl.textContent = "已清除 Token";
+    });
+
+    refreshGhTokenStatus();
 });
