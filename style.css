@@ -286,6 +286,38 @@ body {
     font-size: 0.9rem;
 }
 
+/* ---------- GitHub 链接输入区 ---------- */
+.gh-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.gh-input {
+    flex: 1 1 320px;
+    min-width: 240px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.95rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background: #ffffff;
+    color: var(--text);
+    font-family: inherit;
+}
+
+.gh-input:focus {
+    outline: none;
+    border-color: var(--text);
+}
+
+.loc-divider {
+    text-align: center;
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    margin: 0.4rem 0 1rem;
+}
+
 /* 结果表格（黑白灰极简风） */
 .loc-result table {
     width: 100%;

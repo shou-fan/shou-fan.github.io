@@ -196,6 +196,118 @@ function renderTableHTML(stats) {
     </table>`;
 }
 
+// ---------------- GitHub 仓库统计 ----------------
+
+// 解析 GitHub 链接（支持 https://github.com/owner/repo[/tree/分支[/子目录]][.git]），
+// 返回 { owner, repo, ref, subpath }；ref/subpath 可为空。
+function parseGitHubUrl(input) {
+    let s = (input || "").trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "");
+    const parts = s.split("/").filter(Boolean);
+    if (parts.length < 2 || parts[0].toLowerCase() !== "github.com") {
+        throw new Error("请输入有效的 GitHub 仓库链接，如 https://github.com/用户/仓库");
+    }
+    const owner = parts[1];
+    const repo = parts[2].replace(/\.git$/i, "");
+    if (!repo) throw new Error("链接缺少仓库名");
+    let ref = "", subpath = "";
+    if (parts[3] === "tree" && parts[4]) {
+        ref = parts[4];
+        if (parts.length > 5) subpath = parts.slice(5).join("/");
+    }
+    return { owner, repo, ref, subpath };
+}
+
+// 封装 GitHub API 请求 + 常见错误提示
+async function ghApiFetch(path) {
+    const url = "https://api.github.com/" + path.replace(/^\//, "");
+    let res;
+    try {
+        res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+    } catch (e) {
+        throw new Error("网络错误：无法访问 GitHub API");
+    }
+    if (res.status === 403) {
+        if (res.headers.get("x-ratelimit-remaining") === "0")
+            throw new Error("GitHub API 未登录限额已用完（60 次/小时），请稍后再试");
+        throw new Error("GitHub API 拒绝访问（403）");
+    }
+    if (res.status === 404) throw new Error("仓库不存在或为私有仓库（404）");
+    if (!res.ok) throw new Error("GitHub API 请求失败：" + res.status + " " + res.statusText);
+    return await res.json();
+}
+
+// 从 GitHub 仓库 URL 统计代码量（复用现有 countLines 算法）
+// onProgress(msg) 用于实时上报进度
+async function runStatsFromGitHub(input, onProgress) {
+    const { owner, repo, ref: refFromUrl, subpath } = parseGitHubUrl(input);
+
+    // 1. 确定分支：URL 中没给则拿默认分支
+    onProgress("获取仓库信息…");
+    let ref = refFromUrl;
+    if (!ref) {
+        const info = await ghApiFetch(`repos/${owner}/${repo}`);
+        ref = info.default_branch || "main";
+    }
+
+    // 2. 拉取递归文件树
+    onProgress("获取文件树…");
+    const treeResp = await ghApiFetch(
+        `repos/${owner}/${repo}/git/trees/${encodeURIComponent(ref)}?recursive=1`);
+    if (!Array.isArray(treeResp.tree)) throw new Error("无法读取文件树");
+
+    // 3. 过滤：只保留已识别的源码文件，跳过超大文件（多为自动生成/压缩）
+    const MAX_FILES = 800;           // 一次最多拉取多少个源码文件
+    const MAX_SIZE  = 800 * 1024;    // 800KB 以上跳过
+    const filtered = [];
+    for (const e of treeResp.tree) {
+        if (e.type !== "blob") continue;
+        if (subpath && !e.path.startsWith(subpath + "/")) continue;
+        if (!EXT_MAP[extOf(e.path)]) continue;
+        if (typeof e.size === "number" && e.size > MAX_SIZE) continue;
+        filtered.push(e);
+    }
+    const overCap = filtered.length > MAX_FILES;
+    const files = filtered.slice(0, MAX_FILES);
+    const truncated = !!treeResp.truncated || overCap;
+
+    // 4. 初始化统计结构（与本地文件统计一致）
+    const stats = {};
+    ORDER.forEach(name => { stats[name] = { files: 0, blank: 0, comment: 0, code: 0, total: 0 }; });
+    let counted = 0, failed = 0;
+
+    if (files.length > 0) {
+        // 5. 并发拉取 raw 内容（raw.githubusercontent.com 不估 API 限额）
+        const rawBase = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(ref)}/`;
+        let nextIdx = 0;
+        const worker = async () => {
+            while (true) {
+                const i = nextIdx++;
+                if (i >= files.length) break;
+                const f = files[i];
+                const url = rawBase + f.path.split("/").map(encodeURIComponent).join("/");
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) { failed++; }
+                    else {
+                        const text = await res.text();
+                        const langName = EXT_MAP[extOf(f.path)];
+                        const lc = countLines(LANGS[langName], text);
+                        const s = stats[langName];
+                        s.files += 1; s.code += lc.code; s.blank += lc.blank;
+                        s.comment += lc.comment; s.total += lc.total;
+                        counted++;
+                    }
+                } catch (e) { failed++; }
+                onProgress(`统计中 ${counted + failed}/${files.length}`);
+            }
+        };
+        const CONC = 8;   // 8 个并发工人
+        await Promise.all(Array.from({ length: CONC }, () => worker()));
+    }
+
+    return { stats, counted, failed, fileTotal: files.length, truncated };
+}
+
 // ---------------- 页面交互绑定 ----------------
 document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("locFiles");
@@ -255,4 +367,36 @@ document.addEventListener("DOMContentLoaded", () => {
             runBtn.disabled = false;
         }
     });
+
+    // ===== GitHub 链接仓库统计 =====
+    const ghUrlInput = document.getElementById("ghUrl");
+    const ghRunBtn   = document.getElementById("ghRun");
+    if (ghRunBtn && ghUrlInput) {
+        const runGitHub = async () => {
+            const val = (ghUrlInput.value || "").trim();
+            if (!val) { statusEl.textContent = "请先粘贴 GitHub 仓库链接"; return; }
+            ghRunBtn.disabled = true;
+            runBtn.disabled = true;   // 避免同时跑两个
+            resultEl.innerHTML = "";
+            const t0 = performance.now();
+            try {
+                const r = await runStatsFromGitHub(val, (msg) => { statusEl.textContent = msg; });
+                resultEl.innerHTML = renderTableHTML(r.stats);
+                const secs = ((performance.now() - t0) / 1000).toFixed(1);
+                let m = `已统计 ${r.counted} 个源码文件（${secs}s）`;
+                if (r.failed > 0) m += `，失败 ${r.failed}`;
+                if (r.truncated) m += `，文件树过大已截断（前 800 个）`;
+                statusEl.textContent = m;
+            } catch (err) {
+                statusEl.textContent = "出错了：" + err.message;
+            } finally {
+                ghRunBtn.disabled = false;
+                runBtn.disabled = false;
+            }
+        };
+        ghRunBtn.addEventListener("click", runGitHub);
+        ghUrlInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") { e.preventDefault(); runGitHub(); }
+        });
+    }
 });

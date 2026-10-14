@@ -75,9 +75,16 @@
                 <button class="back-btn" data-goto="#miniapp" data-back>← 返回</button>
                 <h1>代码量统计工具</h1>
                 <p class="miniapp-desc">
-                    选择本地的 C / C++ / Java / Python 源码文件或文件夹，
-                    自动统计每种语言的文件数、空行、注释行、代码行与总行数。
+                    粘贴 GitHub 仓库链接在线统计，或选择本地的 C / C++ / Java / Python
+                    源码文件/文件夹，自动统计每种语言的文件数、空行、注释行、代码行与总行数。
                 </p>
+
+                <div class="gh-box">
+                    <input type="text" id="ghUrl" class="gh-input" spellcheck="false"
+                           placeholder="粘贴 GitHub 仓库链接，如 https://github.com/用户/仓库（可选 /tree/分支/子目录）">
+                    <button id="ghRun" class="btn btn-primary">统计仓库</button>
+                </div>
+                <div class="loc-divider">— 或本地文件 —</div>
 
                 <div class="upload-box">
                     <!-- 两个隐藏的原生 input：一个选文件，一个选文件夹 -->
