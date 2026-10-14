@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 响应式：让页面在手机/平板上正确缩放 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页</title>
+    <!-- 把 style.css「挂」到页面上 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ===== 上部：导航栏 ===== -->
+    <nav class="navbar">
+        <!-- 左上角：实时时间显示（内容由 script.js 每秒更新） -->
+        <div class="nav-clock" id="clock">--:--:--</div>
+        <!-- 时间后的签名，触发后淡入 -->
+        <span class="home-sign" id="homeSign">@shoufan</span>
+
+        <!-- 左侧留空，链接集中在右侧 40% -->
+        <div class="nav-links">
+            <a href="#home" class="nav-active">首页</a>
+            <a href="#research">科研</a>
+            <a href="#projects">项目</a>
+            <a href="#miniapp">小程序</a>
+            <a href="#personal">个人</a>
+        </div>
+    </nav>
+
+    <!-- ===== 中间：内容区（每个导航项对应一个「页面」，切换时滑动过渡） ===== -->
+    <main class="page-container">
+
+        <!-- 首页（默认显示）：粒子文字动画 -->
+        <section class="page active" id="home">
+            <canvas id="homeCanvas"></canvas>
+        </section>
+
+        <!-- 科研 -->
+        <section class="page" id="research">
+            <div class="placeholder">
+                <h1>科研</h1>
+                <p>这里展示科研经历、论文、研究方向等。</p>
+            </div>
+        </section>
+
+        <!-- 项目 -->
+        <section class="page" id="projects">
+            <div class="placeholder">
+                <h1>项目</h1>
+                <p>这里展示你的项目作品（如 C++ 代码统计工具）。</p>
+            </div>
+        </section>
+
+        <!-- 小程序：工具列表 -->
+        <section class="page" id="miniapp">
+            <div class="miniapp-wrap">
+                <h1>小程序</h1>
+                <p class="miniapp-desc">选择一个小工具，点击进入使用。</p>
+                <div class="app-grid">
+                    <div class="app-card" data-goto="#app-loc">
+                        <h2>代码量统计</h2>
+                        <p>统计 C / C++ / Java / Python 源码的文件数、代码行、空行、注释行与总行数。</p>
+                    </div>
+                    <div class="app-card" data-goto="#app-quiz">
+                        <h2>口算题生成</h2>
+                        <p>生成「三个数字 + 两个运算符」的四则运算题目，可选题量与是否含答案，下载为 txt。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 小程序 → 代码量统计 -->
+        <section class="page" id="app-loc" data-nav="#miniapp">
+            <div class="miniapp-wrap">
+                <button class="back-btn" data-goto="#miniapp" data-back>← 返回</button>
+                <h1>代码量统计工具</h1>
+                <p class="miniapp-desc">
+                    选择本地的 C / C++ / Java / Python 源码文件或文件夹，
+                    自动统计每种语言的文件数、空行、注释行、代码行与总行数。
+                </p>
+
+                <div class="upload-box">
+                    <!-- 两个隐藏的原生 input：一个选文件，一个选文件夹 -->
+                    <input type="file" id="locFiles" multiple hidden
+                           accept=".c,.h,.cpp,.cc,.cxx,.c++,.hpp,.hh,.hxx,.h++,.inl,.java,.py,.pyw">
+                    <input type="file" id="locDir" webkitdirectory directory multiple hidden>
+
+                    <button id="pickFiles" class="btn">选择文件</button>
+                    <button id="pickDir" class="btn">选择文件夹</button>
+                    <button id="locRun" class="btn btn-primary">开始统计</button>
+                    <span id="locStatus" class="loc-status"></span>
+                </div>
+
+                <div id="locResult" class="loc-result"></div>
+            </div>
+        </section>
+
+        <!-- 小程序 → 口算题生成 -->
+        <section class="page" id="app-quiz" data-nav="#miniapp">
+            <div class="miniapp-wrap">
+                <button class="back-btn" data-goto="#miniapp" data-back>← 返回</button>
+                <h1>口算题生成</h1>
+                <p class="miniapp-desc">
+                    生成「三个数字 + 两个运算符」的四则运算题目（部分带括号），
+                    可自由设置题目数量与是否包含答案，结果下载为 txt 文件。
+                </p>
+
+                <div class="quiz-controls">
+                    <label class="quiz-field">题目数量
+                        <input type="number" id="quizCount" min="1" max="5000" value="20">
+                    </label>
+                    <label class="quiz-field quiz-check">
+                        <input type="checkbox" id="quizWithAnswer" checked> 包含答案
+                    </label>
+                    <button id="quizGen" class="btn btn-primary">生成并下载 txt</button>
+                    <span id="quizStatus" class="loc-status"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 个人 -->
+        <section class="page" id="personal">
+            <div class="placeholder">
+                <h1>个人</h1>
+                <p>这里放个人信息、兴趣爱好、联系方式等。</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 把 script.js「挂」到页面上（放在 body 末尾，等结构加载完再执行） -->
+    <script src="script.js"></script>
+    <!-- 首页粒子动画：名言数据 + 粒子系统（quotes.js 必须在 particles.js 之前） -->
+    <script src="quotes.js"></script>
+    <script src="particles.js"></script>
+    <!-- 代码量统计工具（小程序页） -->
+    <script src="loc.js"></script>
+    <!-- 口算题生成（小程序页） -->
+    <script src="quiz.js"></script>
+</body>
+</html>
