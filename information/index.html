@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王同睿 · 个人信息</title>
+    <!-- 便于搜索引擎/审核爬虫识别 -->
+    <meta name="description" content="王同睿（Wang Tongrui）的个人信息页 · 邮箱 wangtongrui@stu.scu.edu.cn">
+    <meta name="author" content="王同睿 Wang Tongrui">
+
+    <!-- 复用主页的 :root CSS 变量、字体、body 重置 -->
+    <link rel="stylesheet" href="../style.css">
+
+    <style>
+        /* ---------- /information 页专属样式（黑白灰极简风） ---------- */
+        .info-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1.2rem;
+            background: var(--bg);
+        }
+
+        .info-card {
+            max-width: 560px;
+            width: 100%;
+            padding: 2.4rem 2.2rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .info-card h1 {
+            font-size: 2.2rem;
+            color: var(--text);
+            margin: 0 0 0.2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .info-subtitle {
+            color: var(--text-gray);
+            font-size: 1rem;
+            margin: 0 0 1.8rem;
+            letter-spacing: 0.08em;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            gap: 0.8rem;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .info-list li:last-child { border-bottom: none; }
+
+        .info-list .k {
+            color: var(--text-gray);
+            min-width: 4em;
+        }
+
+        .info-list .v { color: var(--text); word-break: break-all; }
+
+        .info-list a {
+            color: var(--text);
+            text-decoration: none;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .info-list a:hover {
+            color: var(--hover);
+            border-bottom-color: var(--hover);
+        }
+
+        .info-back {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s ease;
+        }
+
+        .info-back:hover { color: var(--hover); }
+    </style>
+</head>
+<body>
+    <div class="info-page">
+        <div class="info-card">
+            <h1>王同睿</h1>
+            <p class="info-subtitle">Wang Tongrui</p>
+
+            <ul class="info-list">
+                <li><span class="k">姓名</span><span class="v">王同睿</span></li>
+                <li><span class="k">英文名</span><span class="v">Wang Tongrui</span></li>
+                <li><span class="k">邮箱</span><span class="v"><a href="mailto:wangtongrui@stu.scu.edu.cn">wangtongrui@stu.scu.edu.cn</a></span></li>
+            </ul>
+
+            <a href="../" class="info-back">← 返回个人主页</a>
+        </div>
+    </div>
+</body>
+</html>

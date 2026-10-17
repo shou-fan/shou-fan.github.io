@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口算闯关 · 试卷模式</title>
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div id="navRoot"></div>
+    <div class="wrap">
+        <h1>试卷模式</h1>
+        <p class="subtitle">按段配置生成 A4 打印友好的试卷；支持浏览器打印 (Ctrl+P) 与 txt 下载。</p>
+
+        <div class="print-controls">
+            <div class="row">
+                <label>难度段
+                    <select id="segSel">
+                        <option value="easy">简单（一位数）</option>
+                        <option value="medium">中等（两位数）</option>
+                        <option value="hard">困难（三位数）</option>
+                    </select>
+                </label>
+                <label>题目数量
+                    <input type="number" id="pcount" min="1" max="50" value="20">
+                </label>
+                <label><input type="checkbox" id="pans"> 包含答案</label>
+            </div>
+            <div class="row">
+                <button class="btn btn-primary" id="genBtn">生成预览</button>
+                <button class="btn" id="printBtn">打印</button>
+                <button class="btn" id="txtBtn">下载 txt</button>
+            </div>
+        </div>
+
+        <div id="printPreview">
+            <p style="text-align:center;color:#bdc3c7;padding:40px">还没有生成试卷</p>
+        </div>
+    </div>
+    <script src="js/core/generator.js"></script>
+    <script src="js/core/level.js"></script>
+    <script src="js/data/storage.js"></script>
+    <script src="js/ui/toast.js"></script>
+    <script src="js/ui/nav.js"></script>
+    <script src="js/ui/print.js"></script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口算闯关 · 答题</title>
+    <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+    <div id="navRoot"></div>
+    <div class="wrap">
+        <div class="play-topbar">
+            <div class="title" id="qTitle">加载中…</div>
+            <div class="progress" id="progress">已完成 0/20</div>
+            <div class="timer ok" id="timer">--:--</div>
+        </div>
+        <div class="qgrid" id="qGrid"></div>
+        <div class="play-bottom">
+            <button class="btn btn-ghost" id="abandonBtn">放弃本关</button>
+            <button class="btn btn-primary" id="submitBtn" disabled>提交（需全部答对）</button>
+        </div>
+    </div>
+    <script src="js/core/generator.js"></script>
+    <script src="js/core/level.js"></script>
+    <script src="js/core/evaluator.js"></script>
+    <script src="js/data/storage.js"></script>
+    <script src="js/ui/toast.js"></script>
+    <script src="js/ui/nav.js"></script>
+    <script src="js/ui/play.js"></script>
+</body>
+</html>
