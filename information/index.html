@@ -8,28 +8,42 @@
     <meta name="description" content="王同睿（Wang Tongrui）的个人信息页 · 邮箱 wangtongrui@stu.scu.edu.cn">
     <meta name="author" content="王同睿 Wang Tongrui">
 
-    <!-- 复用主页的 :root CSS 变量、字体、body 重置 -->
+    <!-- 复用主页的 :root CSS 变量、body 重置、背景 cover/fixed 等 -->
     <link rel="stylesheet" href="../style.css">
 
     <style>
-        /* ---------- /information 页专属样式（黑白灰极简风） ---------- */
+        /* ---------- /information 页专属：与主页视觉/动效一致 ---------- */
+        /* 背景整屏固定（style.css 已给 body 设 background-size/attachment） */
+        html, body {
+            overflow-x: hidden;   /* 滑入动画期间裁掉横向溢出 */
+        }
+
+        /* 整块内容像 SPA 页面一样从右侧滑入 —— 与主页 switchTo 时长/缓动一致 */
         .info-page {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 2rem 1.2rem;
-            background: var(--bg);
+            transform: translateX(100%);
+            animation: infoSlide 0.5s ease forwards;
         }
 
+        @keyframes infoSlide {
+            from { transform: translateX(100%); }
+            to   { transform: translateX(0); }
+        }
+
+        /* 磨砂玻璃卡片 —— 与 .page 一致的白色不透明度 + blur */
         .info-card {
             max-width: 560px;
             width: 100%;
             padding: 2.4rem 2.2rem;
-            border: 1px solid var(--border);
             border-radius: 10px;
-            background: var(--bg);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .info-card h1 {
@@ -56,7 +70,7 @@
             display: flex;
             gap: 0.8rem;
             padding: 0.7rem 0;
-            border-bottom: 1px solid #eeeeee;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             font-size: 1rem;
             color: var(--text);
         }
@@ -108,5 +122,23 @@
             <a href="../" class="info-back">← 返回个人主页</a>
         </div>
     </div>
+
+    <script>
+        // 与主页用同一组背景图，随机选一张挂到 body 上
+        // 路径相对本页，所以要 ../indexback/
+        (function () {
+            const images = [
+                "12019-beach-1751455_1920.jpg",
+                "cleverpix-pier-1467984_1920.jpg",
+                "elija1703-beach-5982796_1920.jpg",
+                "frankbeckerde-mountains-6540497_1920.jpg",
+                "jwvein-autumn-7589934_1920.jpg",
+                "stevepb-sunset-404072_1920.jpg",
+                "yeskay1211-hills-2836301_1920.jpg",
+            ];
+            const pick = images[Math.floor(Math.random() * images.length)];
+            document.body.style.backgroundImage = `url("../indexback/${pick}")`;
+        })();
+    </script>
 </body>
 </html>
