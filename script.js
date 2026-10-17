@@ -166,4 +166,19 @@ document.addEventListener("DOMContentLoaded", () => {
         window.HOME_BG_LUM = pick.lum;   // 暴露给 particles.js 做自适应配色
     }
 
+    // ===== 支持 URL hash 直达某个页面（例如 /information 里点导航栏跳回 ../#research）=====
+    // 只在初始加载时处理一次；不触发 switchTo 避免开场动画
+    const initialHash = (location.hash || "").trim();
+    if (initialHash.length > 1 && initialHash.charAt(0) === "#") {
+        const target = document.getElementById(initialHash.slice(1));
+        if (target && target.classList.contains("page") && !target.classList.contains("active")) {
+            const cur = document.querySelector(".page.active");
+            if (cur) cur.classList.remove("active");
+            target.classList.add("active");
+            const navTarget = target.getAttribute("data-nav") || initialHash;
+            navLinks.forEach(l =>
+                l.classList.toggle("nav-active", l.getAttribute("href") === navTarget));
+        }
+    }
+
 });
