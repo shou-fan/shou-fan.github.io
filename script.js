@@ -147,23 +147,13 @@ document.addEventListener("DOMContentLoaded", () => {
         setInterval(updateClock, 1000);  // 之后每秒更新
     }
 
-    // ===== 首页：每次打开随机选择一张背景图 =====
-    // lum = 该图中心区域的平均亮度(0~255，用 PowerShell+System.Drawing 预先算好)，
-    //       供 particles.js 自适应选择粒子灰度色（深图用浅字、浅图用深字）。
-    const homeBackgrounds = [
-        { url: "indexback/12019-beach-1751455_1920.jpg",             lum: 185.3 },
-        { url: "indexback/cleverpix-pier-1467984_1920.jpg",          lum: 148.2 },
-        { url: "indexback/elija1703-beach-5982796_1920.jpg",         lum: 89.8  },
-        { url: "indexback/frankbeckerde-mountains-6540497_1920.jpg", lum: 168.0 },
-        { url: "indexback/jwvein-autumn-7589934_1920.jpg",           lum: 75.2  },
-        { url: "indexback/stevepb-sunset-404072_1920.jpg",           lum: 117.1 },
-        { url: "indexback/yeskay1211-hills-2836301_1920.jpg",        lum: 139.7 },
-    ];
-    if (homeBackgrounds.length > 0) {
-        // 从数组里随机取一张，挂到 body 上作为全屏固定背景（覆盖整个视口）
-        const pick = homeBackgrounds[Math.floor(Math.random() * homeBackgrounds.length)];
-        document.body.style.backgroundImage = `url("${pick.url}")`;
-        window.HOME_BG_LUM = pick.lum;   // 暴露给 particles.js 做自适应配色
+    // ===== 首页背景：使用共享的 HomeBg（bg.js）=====
+    // 同一次访问内主页与 /information 会拿到**同一张**随机图（sessionStorage）；
+    // 同时把该图预计算的中心亮度写入 window.HOME_BG_LUM，供 particles.js 自适应选灰度色。
+    if (typeof HomeBg !== "undefined") {
+        const bg = HomeBg.pick();
+        document.body.style.backgroundImage = `url("indexback/${bg.file}")`;
+        window.HOME_BG_LUM = bg.lum;
     }
 
     // ===== 支持 URL hash 直达某个页面（例如 /information 里点导航栏跳回 ../#research）=====

@@ -8,17 +8,22 @@
     <meta name="description" content="王同睿（Wang Tongrui）的个人信息页 · 邮箱 wangtongrui@stu.scu.edu.cn">
     <meta name="author" content="王同睿 Wang Tongrui">
 
-    <!-- 复用主页的 :root 变量、.navbar/.nav-clock/.nav-links/.page/.page-container 等所有通用样式 -->
+    <!-- 复用主页的 :root 变量、.navbar/.nav-clock/.nav-links/.page-container/.page 等通用样式 -->
     <link rel="stylesheet" href="../style.css">
 
     <style>
-        /* /information 与主页完全一致的视觉/动效：
-           - 顶部 .navbar 已经由 style.css 提供（磨砂玻璃 + 时钟 + 导航项）
-           - 中间 .page-container > .page.active 就是「导航栏以下整片 78% 白 + blur(30) 磨砂」
-           - 这里只加一个「加载后从右滑入」的入场动画（与主页 switchTo 时长/缓动一致） */
+        /* /information 与主页视觉/动效一致：
+           - .navbar 顶部（style.css 提供磨砂 + 时钟 + 导航）
+           - .page-container > .page.active 提供「导航栏以下整片 78% 白 + blur(30)」的磨砂
+           - .info-page 只加两条：入场从右滑入 + 内容整体上移
+        */
         html, body { overflow-x: hidden; }
 
-        .info-page { animation: infoSlide 0.5s ease; }
+        .info-page {
+            animation: infoSlide 0.5s ease;
+            align-items: flex-start;   /* 顶对齐，让内容整体上移 */
+            padding-top: 15vh;         /* 距导航栏底部的间距，越小越靠上 */
+        }
 
         @keyframes infoSlide {
             from { transform: translateX(100%); }
@@ -31,28 +36,22 @@
             width: 100%;
         }
         .info-card h1 {
-            font-size: 2.2rem;
+            font-size: 2.4rem;
             color: var(--text);
-            margin: 0 0 0.2rem;
-            letter-spacing: 0.05em;
-        }
-        .info-subtitle {
-            color: var(--text-gray);
-            font-size: 1rem;
-            margin: 0 0 1.8rem;
+            margin: 0 0 1.6rem;
             letter-spacing: 0.08em;
         }
         .info-list {
             list-style: none;
             padding: 0;
-            margin: 0 0 1rem 0;
+            margin: 0;
         }
         .info-list li {
             display: flex;
             gap: 0.8rem;
             padding: 0.7rem 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            font-size: 1rem;
+            font-size: 1.05rem;
             color: var(--text);
         }
         .info-list li:last-child { border-bottom: none; }
@@ -64,15 +63,6 @@
             border-bottom: 1px solid #dddddd;
         }
         .info-list a:hover { color: var(--hover); border-bottom-color: var(--hover); }
-        .info-back {
-            display: inline-block;
-            margin-top: 1rem;
-            color: var(--text-gray);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: color 0.2s ease;
-        }
-        .info-back:hover { color: var(--hover); }
     </style>
 </head>
 <body>
@@ -89,39 +79,28 @@
         </div>
     </nav>
 
-    <!-- 与主页相同结构：page-container 之下就是整片磨砂的 .page -->
+    <!-- 与主页相同结构：page-container > page.active 就是导航栏以下整片磨砂 -->
     <main class="page-container">
         <section class="page active info-page">
             <div class="info-card">
                 <h1>王同睿</h1>
-                <p class="info-subtitle">Wang Tongrui</p>
-
                 <ul class="info-list">
                     <li><span class="k">姓名</span><span class="v">王同睿</span></li>
-                    <li><span class="k">英文名</span><span class="v">Wang Tongrui</span></li>
                     <li><span class="k">邮箱</span><span class="v"><a href="mailto:wangtongrui@stu.scu.edu.cn">wangtongrui@stu.scu.edu.cn</a></span></li>
                 </ul>
-
-                <a href="../" class="info-back">← 返回个人主页</a>
             </div>
         </section>
     </main>
 
+    <!-- 共享背景选择器（同 session 与主页使用同一张随机图） -->
+    <script src="../bg.js"></script>
+
     <script>
-        // ===== 与主页用同一组背景图，随机选一张挂到 body（相对本页在 ../indexback/） =====
-        (function () {
-            const images = [
-                "12019-beach-1751455_1920.jpg",
-                "cleverpix-pier-1467984_1920.jpg",
-                "elija1703-beach-5982796_1920.jpg",
-                "frankbeckerde-mountains-6540497_1920.jpg",
-                "jwvein-autumn-7589934_1920.jpg",
-                "stevepb-sunset-404072_1920.jpg",
-                "yeskay1211-hills-2836301_1920.jpg",
-            ];
-            const pick = images[Math.floor(Math.random() * images.length)];
-            document.body.style.backgroundImage = `url("../indexback/${pick}")`;
-        })();
+        // ===== 背景：通过 HomeBg.pick() 保证与主页同 session 内一致 =====
+        if (typeof HomeBg !== "undefined") {
+            const bg = HomeBg.pick();
+            document.body.style.backgroundImage = `url("../indexback/${bg.file}")`;
+        }
 
         // ===== 与主页同款：东七区 UTC+7 时钟 + 逐字符跳动 =====
         (function () {
