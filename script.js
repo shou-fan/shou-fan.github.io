@@ -156,18 +156,17 @@ document.addEventListener("DOMContentLoaded", () => {
         window.HOME_BG_LUM = bg.lum;
     }
 
-    // ===== 支持 URL hash 直达某个页面（例如 /information 里点导航栏跳回 ../#research）=====
-    // 只在初始加载时处理一次；不触发 switchTo 避免开场动画
+    // ===== 支持 URL hash 直达某个页面，并带与其他切页一致的滑动入场动画 =====
+    // （从 /information 导航栏点回主站各页时能看到滑入效果）
     const initialHash = (location.hash || "").trim();
     if (initialHash.length > 1 && initialHash.charAt(0) === "#") {
-        const target = document.getElementById(initialHash.slice(1));
-        if (target && target.classList.contains("page") && !target.classList.contains("active")) {
-            const cur = document.querySelector(".page.active");
-            if (cur) cur.classList.remove("active");
-            target.classList.add("active");
-            const navTarget = target.getAttribute("data-nav") || initialHash;
-            navLinks.forEach(l =>
-                l.classList.toggle("nav-active", l.getAttribute("href") === navTarget));
+        const t = document.getElementById(initialHash.slice(1));
+        if (t && t.classList.contains("page") && !t.classList.contains("active")) {
+            // 双 rAF：先让浏览器把初始帧（首页 active）绘制出来，再改 class，
+            // .page 自带的 0.5s transform transition 才会真正地播放
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                switchTo(initialHash, false);
+            }));
         }
     }
 
