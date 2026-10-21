@@ -9,7 +9,7 @@
     <meta name="author" content="王同睿 Wang Tongrui">
 
     <!-- 复用主页的 :root 变量、.navbar/.nav-clock/.nav-links/.page-container/.page 等通用样式 -->
-    <link rel="stylesheet" href="../style.css?v=2">
+    <link rel="stylesheet" href="../style.css?v=3">
 
     <style>
         /* /information 与主页视觉/动效一致：
@@ -93,7 +93,7 @@
     </main>
 
     <!-- 共享背景选择器（同 session 与主页使用同一张随机图） -->
-    <script src="../bg.js?v=2"></script>
+    <script src="../bg.js?v=3"></script>
 
     <script>
         // ===== 背景：通过 HomeBg.pick() 保证与主页同 session 内一致 =====
@@ -101,6 +101,18 @@
             const bg = HomeBg.pick();
             document.body.style.backgroundImage = `url("../indexback/${bg.file}")`;
         }
+
+        // ===== 从 /information 返回主站时，给主站一个「后退」标记 =====
+        // 个人在主站导航栏中位于最右侧，回任何页都是「向左」，
+        // 主站 script.js 会读这个标记并调 switchTo(hash, true)，实现从左侧滑入。
+        document.querySelectorAll(".nav-links a").forEach(a => {
+            const href = a.getAttribute("href") || "";
+            if (href.startsWith("../#")) {
+                a.addEventListener("click", () => {
+                    try { sessionStorage.setItem("locNavBack", "1"); } catch (e) {}
+                });
+            }
+        });
 
         // ===== 与主页同款：东七区 UTC+7 时钟 + 逐字符跳动 =====
         (function () {

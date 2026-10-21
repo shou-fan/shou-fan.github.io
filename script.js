@@ -162,10 +162,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (initialHash.length > 1 && initialHash.charAt(0) === "#") {
         const t = document.getElementById(initialHash.slice(1));
         if (t && t.classList.contains("page") && !t.classList.contains("active")) {
+            // 如果 /information 写了「后退」标记，则目标页从左侧滑入（一次性的，读完就删）
+            let back = false;
+            try {
+                back = sessionStorage.getItem("locNavBack") === "1";
+                if (back) sessionStorage.removeItem("locNavBack");
+            } catch (e) {}
             // 双 rAF：先让浏览器把初始帧（首页 active）绘制出来，再改 class，
             // .page 自带的 0.5s transform transition 才会真正地播放
             requestAnimationFrame(() => requestAnimationFrame(() => {
-                switchTo(initialHash, false);
+                switchTo(initialHash, back);
             }));
         }
     }
